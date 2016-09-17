@@ -173,7 +173,8 @@ def rm(remote_file):
 @click.argument('local_file')
 @click.option('--no-output', '-n', is_flag=True,
               help="Run the code without waiting for it to finish and print output.  Use this when running code with main loops that never return.")
-def run(local_file, no_output):
+@click.argument('run_arguments', required=False, nargs=-1)
+def run(local_file, no_output, run_arguments):
     """Run a script and print its output.
 
     Run will send the specified file to the board and execute it immediately.
@@ -194,7 +195,7 @@ def run(local_file, no_output):
     """
     # Run the provided file and print its output.
     board_files = files.Files(_board)
-    output = board_files.run(local_file, not no_output)
+    output = board_files.run(local_file, not no_output, run_arguments)
     if output is not None:
         print(output.decode('utf-8'), end='')
 

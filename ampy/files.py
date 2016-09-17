@@ -21,6 +21,7 @@
 # SOFTWARE.
 import ast
 import textwrap
+from pprint import pformat
 
 from ampy.pyboard import PyboardError
 
@@ -158,12 +159,18 @@ class Files(object):
                 raise ex
         self._pyboard.exit_raw_repl()
 
-    def run(self, filename, wait_output=True):
+    def run(self, filename, wait_output=True, run_arguments=[]):
         """Run the provided script and return its output.  If wait_output is True
         (default) then wait for the script to finish and then print its output,
         otherwise just run the script and don't wait for any output.
         """
         self._pyboard.enter_raw_repl()
+        if len(run_arguments) > 0:
+            argexec = "import sys\n"
+            for arg in run_arguments:
+                argQuoted = pformat(str(arg))
+                argexec += "sys.argv.append("+str(argQuoted)+")\n"
+            self._pyboard.exec_raw_no_follow(argexec)
         out = None
         if wait_output:
             # Run the file and wait for output to return.
