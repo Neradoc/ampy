@@ -167,9 +167,10 @@ class Files(object):
         self._pyboard.enter_raw_repl()
         if len(run_arguments) > 0:
             argexec = "import sys\n"
+            argexec += "sys.argv.append("+pformat(filename)+")\n"
             for arg in run_arguments:
                 argQuoted = pformat(str(arg))
-                argexec += "sys.argv.append("+str(argQuoted)+")\n"
+                argexec += "sys.argv.append("+argQuoted+")\n"
             self._pyboard.exec_raw_no_follow(argexec)
         out = None
         if wait_output:
