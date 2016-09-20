@@ -196,8 +196,8 @@ def run(local_file, no_output, run_arguments):
     # Run the provided file and print its output.
     board_files = files.Files(_board)
     output = board_files.run(local_file, not no_output, run_arguments)
-    if output is not None:
-        print(output.decode('utf-8'), end='')
+    #if output is not None:
+    #    print(output.decode('utf-8'), end='')
 
 @cli.command()
 def reset():

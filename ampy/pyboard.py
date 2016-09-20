@@ -153,9 +153,14 @@ class Pyboard:
             data_consumer(data)
         timeout_count = 0
         while True:
-            if data.endswith(ending):
-                break
-            elif self.serial.inWaiting() > 0:
+            if type(ending) == list:
+                for endX in ending:
+                    if data.endswith(endX):
+                        break
+            else:
+                if data.endswith(ending):
+                    break
+            if self.serial.inWaiting() > 0:
                 new_data = self.serial.read(1)
                 data = data + new_data
                 if data_consumer:
@@ -207,14 +212,20 @@ class Pyboard:
     def follow(self, timeout, data_consumer=None):
         # wait for normal output
         data = self.read_until(1, b'\x04', timeout=timeout, data_consumer=data_consumer)
-        if not data.endswith(b'\x04'):
-            raise PyboardError('timeout waiting for first EOF reception')
+        if data.endswith(b'\r\n'):
+            pass
+        elif not data.endswith(b'\x04'):
+            print('--timeout waiting for first EOF reception--')
+            sys.exit()
+            #raise PyboardError('timeout waiting for first EOF reception')
         data = data[:-1]
 
         # wait for error output
-        data_err = self.read_until(1, b'\x04', timeout=timeout)
+        data_err = self.read_until(1, b'\x04', timeout=timeout, data_consumer=data_consumer)
         if not data_err.endswith(b'\x04'):
-            raise PyboardError('timeout waiting for second EOF reception')
+            print('--timeout waiting for first EOF reception--')
+            sys.exit()
+            #raise PyboardError('timeout waiting for second EOF reception')
         data_err = data_err[:-1]
 
         # return normal and error output
@@ -252,9 +263,10 @@ class Pyboard:
         return ret
 
     def exec_(self, command):
-        ret, ret_err = self.exec_raw(command)
+        ret, ret_err = self.exec_raw(command, data_consumer=stdout_write_bytes)
         if ret_err:
-            raise PyboardError('exception', ret, ret_err)
+            sys.exit()
+            #raise PyboardError('exception', ret, ret_err)
         return ret
 
     def execfile(self, filename):
@@ -274,7 +286,7 @@ def execfile(filename, device='/dev/ttyACM0', baudrate=115200, user='micro', pas
     pyb = Pyboard(device, baudrate, user, password)
     pyb.enter_raw_repl()
     output = pyb.execfile(filename)
-    stdout_write_bytes(output)
+    #stdout_write_bytes(output)
     pyb.exit_raw_repl()
     pyb.close()
 
